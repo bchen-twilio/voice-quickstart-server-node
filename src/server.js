@@ -8,6 +8,17 @@ const callerId = 'client:quick_start';
 // Use a valid Twilio number by adding to your account via https://www.twilio.com/console/phone-numbers/verified
 const callerNumber = '1234567890';
 
+const apn = require('apn');
+
+let provider = new apn.Provider({
+  token: {
+    key: "path/to/your.p8",
+    keyId: "KEY_ID",
+    teamId: "TEAM_ID"
+  },
+  production: false
+});
+
 /**
  * Creates an access token with VoiceGrant using your Twilio credentials.
  *
@@ -179,8 +190,24 @@ function isNumber(to) {
   return false;
 }
 
+function sendNotification(request, response) {
+  let deviceTokens = ["DEVICE_TOKEN"];
+  let notification = new apn.Notification();
+  notification.alert = "Hello, world!";
+  notification.topic = "com.twilio.app-bundle-id.voip";
+
+  provider.send(notification, deviceTokens).then( (response) => {
+    // response.sent: Array of device tokens to which the notification was sent succesfully
+    // response.failed: Array of objects containing the device token (`device`) and either an `error`, or a `status` and `response` from the API
+    console.log("sent:", result.sent.length);
+    console.log("failed:", result.failed.length);
+    console.log(result.failed);
+  });
+}
+
 exports.tokenGenerator = tokenGenerator;
 exports.makeCall = makeCall;
 exports.placeCall = placeCall;
 exports.incoming = incoming;
 exports.welcome = welcome;
+exports.sendNotification = sendNotification;
